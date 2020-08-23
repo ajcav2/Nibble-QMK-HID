@@ -20,9 +20,6 @@ const usagePage = 65376;
 // Name of our DynamoDB table which holds stock information
 const tableName = "Stocks";
 
-// Zip code for weather data (might also work with city names?)
-zipCode = "60005";
-
 // Set up AWS credentials for DynamoDB access
 aws.config.update({region: "us-east-1"});
 let credentials = new aws.SharedIniFileCredentials({profile:'default'});
