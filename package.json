@@ -1,0 +1,32 @@
+{
+  "name": "nibble-qmk-hid",
+  "version": "1.0.0",
+  "description": "A tool to display stock, weather, and performance data on the Nibble OLED.",
+  "main": "Keyboard.js",
+  "dependencies": {
+    "aws-sdk": "^2.738.0",
+    "diskusage": "^1.1.3",
+    "loudness": "^0.4.1",
+    "node-hid": "^1.3.0",
+    "os-utils": "^0.0.14",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "npm run Keyboard.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ajcav2/Nibble-QMK-HID.git"
+  },
+  "keywords": [
+    "qmk",
+    "nibble"
+  ],
+  "author": "Alex Cavanaugh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ajcav2/Nibble-QMK-HID/issues"
+  },
+  "homepage": "https://github.com/ajcav2/Nibble-QMK-HID#readme"
+}
