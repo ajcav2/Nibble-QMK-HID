@@ -98,7 +98,16 @@ async function startStockMonitor() {
             let priceFractional = Math.round((priceWhole % 1)*100);
             let pDiff = ~~((priceWhole - priceStart) / priceStart * 100);
             pDiff = pDiff + 128;
-            let topBottom = 1;
+            let topBottom;
+            if (stockPoints.has(10)) {
+                if (stockPoints.get(10) > 16) {
+                    topBottom = 0;
+                } else {
+                    topBottom = 1;
+                }
+            } else {
+                topBottom = 0;
+            }
             stockMsg = [pDiff, priceWholeBig, priceWholeSmall, priceFractional, topBottom, thisStock.charCodeAt(0), thisStock.charCodeAt(1), thisStock.charCodeAt(2), thisStock.charCodeAt(3), thisStock.charCodeAt(4)];
             
             for (let i = 5; i < stockMsg.length; i++) {
@@ -131,7 +140,7 @@ function kToF(K) {
 }
 
 
-function isNight(sunriseTime, sunsetTime) {
+function isNight(sunriseTime, sunsetTime) { 
     let now = new Date();
     if (now.getTime()/1000 > sunriseTime && now.getTime()/1000 < sunsetTime) {
         return 0;
@@ -271,7 +280,7 @@ async function startWeatherMonitor() {
                 weatherMsg[12] = obj.list[1].weather[0].id; // id at next update
                 weatherMsg[13] = obj.list[1].weather[0].id >> 8; // id  at next update
                 try {
-                    weatherMsg[14] = obj.list[1].rain["3h"]*100; // chance of precip
+                    weatherMsg[14] = Math.round(obj.list[1].rain["3h"]); // chance of precip
                 } catch (error) {
                     weatherMsg[14] = 0; // no chance of rain
                 }
