@@ -5,7 +5,7 @@ const loudness = require('loudness');
 const os 	= require('os-utils');
 const disk = require('diskusage')
 const fs = require('fs');
-const weatherApiKey = require('./config');
+const config = require('./config');
 
 // Define the productId and vendorId for the Nibble
 const productId = 24672;
@@ -232,7 +232,7 @@ async function startWeatherMonitor() {
     function getWeather() {
         // Get the current weather conditions
         return new Promise((resolve) => {
-            request(`https://api.openweathermap.org/data/2.5/weather?q=${zipCode}&appid=${weatherApiKey['weatherApiKey']}`, (err, res, body) => {
+            request(`https://api.openweathermap.org/data/2.5/weather?q=${config['zipCode']}&appid=${config['weatherApiKey']}`, (err, res, body) => {
                 weather = {};
                 weather.res = res;
                 weather.body = body;
@@ -261,7 +261,7 @@ async function startWeatherMonitor() {
     function getFutureWeather() {
         // Get future weather conditions
         return new Promise((resolve) => {
-            request(`https://api.openweathermap.org/data/2.5/forecast?q=${zipCode}&appid=${weatherApiKey['weatherApiKey']}`, (err, res, body) => {
+            request(`https://api.openweathermap.org/data/2.5/forecast?q=${config['zipCode']}&appid=${config['weatherApiKey']}`, (err, res, body) => {
                 weather = {};
                 weather.res = res;
                 weather.body = body;
@@ -299,6 +299,7 @@ async function startWeatherMonitor() {
     }
 }
 
+// Prepopulating the array to hold performance data
 let perfMsg = new Array(30).fill(0);
 async function startPerfMonitor() {
     
@@ -310,7 +311,6 @@ async function startPerfMonitor() {
             perfMsg[3] = ((info.total - info.free)/info.total) * 100 + 25;
         });
         perfMsg[1] = 100 - Math.round(os.freememPercentage()*100)+25; // RAM usage
-        // perfMsg[3] = Math.round(os.loadavg(1))+25; // average usage over one minute
     }
 
     while (true) {
@@ -325,6 +325,8 @@ async function startPerfMonitor() {
     }
 }
 
+
+// Coordinates for oled screen
 class Coordinate {
     constructor(x, y) {
         this.x = x;
@@ -339,6 +341,10 @@ function clamp(num, min, max) {
 
 
 function createStockLine(stockMap) {
+    // Given a stockMap (a collection of {datetime: marketPrice} points), create
+    // a line on a 32x128 OLED screen that represents the stocks market price
+    // over time
+
     let today = new Date();
     let dd = String(today.getDate()).padStart(2, '0');
     let mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -362,6 +368,7 @@ function createStockLine(stockMap) {
         }
     }
 
+    // Set the graph scale depending on the max difference from the starting price
     let pDiff = Math.max((highestStockPrice-startingStockPrice)/startingStockPrice, Math.abs(lowestStockPrice-startingStockPrice)/startingStockPrice);
     let scale;
     if (pDiff < 0.03) {
@@ -375,8 +382,8 @@ function createStockLine(stockMap) {
     }
 
 
+    // Loop over all of the market prices to create the graph
     let prevX = 0;
-    let prevY = startingStockPrice;
     let prevPt = new Coordinate(prevX, 16);
     let pts = new Map();
     let thisLinePts = new Map();
@@ -398,6 +405,8 @@ function createStockLine(stockMap) {
 }
 
 function connectTwoOledPoints(pt1, pt2) {
+    // Returns a straight line connecting two points
+
     let pts = new Map();
     pts.set(pt1.x, Math.round(pt1.y));
     pts.set(pt2.x, Math.round(pt2.y));
@@ -440,7 +449,7 @@ function sendDataToKeyboard(msg) {
                 })
 
                 // Initiate a new connection
-                // 1st byte is thrown away (node-hid bug)
+                // 1st byte is thrown away (see node-hid bug)
                 // 2nd byte is used to initiate a new connection
                 // The rest of the bytes can be discarded
                 keyboard.write([0, 127, 1, 2, 3, 4, 5]);
@@ -465,7 +474,7 @@ function sendDataToKeyboard(msg) {
         }
 
     } else {
-        console.log("No connection to keyboard");
+        console.log("Lost connection");
     }
 }
 
