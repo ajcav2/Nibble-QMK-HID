@@ -12,7 +12,7 @@ module.exports.profile = 'default';
 
 // Weather configuration
 module.exports.showWeather = true;
-module.exports.weatherApiKey = "446de34ece97f67f68a49562a149a709";
+module.exports.weatherApiKey = null;
 module.exports.zipCode = "60005";
 
 // Performance configuration
