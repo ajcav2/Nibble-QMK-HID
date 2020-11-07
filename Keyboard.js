@@ -7,23 +7,45 @@ const disk = require('diskusage')
 const fs = require('fs');
 const config = require('./config');
 
+// Choose which features to use here. This should
+// match what is in your keymap file. 
+let showStocks = config['showStocks'];
+let showWeather = config['showWeather'];
+let showPerformance = config['showPerformance'];
+
+// Set which screen to start on. This should match
+// what is in your keymap file.
+// stocks: 1   weather: 2   performance: 3
+let currentScreen;
+if (showStocks) {
+    currentScreen = 1;
+} else if (showWeather) {
+    currentScreen = 2;
+} else if (showPerformance) {
+    currentScreen = 3;
+}
+
+let storageDrive = config['storageDrive'];
+
 // Define the productId and vendorId for the Nibble
-const productId = 24672;
-const vendorId = 28257;
+const productId = config['productId'];
+const vendorId = config['vendorId'];
 
 // These are the possible usage / usagePage combinations
 // I've found that 97 & 65376 works
 // (6, 1), (97, 65376), (128, 1), (6, 1), (1, 12)
-const usage = 97;
-const usagePage = 65376;
+const usage = config['usage'];
+const usagePage = config['usagePage'];
 
-// Name of our DynamoDB table which holds stock information
-const tableName = "Stocks";
+if (showStocks) {
+    // Name of our DynamoDB table which holds stock information
+    const tableName = config['tableName'];
 
-// Set up AWS credentials for DynamoDB access
-aws.config.update({region: "us-east-1"});
-let credentials = new aws.SharedIniFileCredentials({profile:'default'});
-aws.config.credentials = credentials;
+    // Set up AWS credentials for DynamoDB access
+    aws.config.update({region: config['region']});
+    let credentials = new aws.SharedIniFileCredentials({profile:config['profile']});
+    aws.config.credentials = credentials;
+}
 
 // This will hold a reference to our hid device
 let keyboard = null;
@@ -307,7 +329,7 @@ async function startPerfMonitor() {
         os.cpuUsage(function(v) {
             perfMsg[2] = Math.round(v*100)+25; // cpu usage percent
         });
-        disk.check('C:', function(err, info) {
+        disk.check(storageDrive, function(err, info) {
             perfMsg[3] = ((info.total - info.free)/info.total) * 100 + 25;
         });
         perfMsg[1] = 100 - Math.round(os.freememPercentage()*100)+25; // RAM usage
@@ -418,8 +440,6 @@ function connectTwoOledPoints(pt1, pt2) {
 }
 
 // Screens are, in order: [stocks, weather, performance]
-let currentScreen = 1;
-let numScreens = 3;
 let screenOptions = ["stocks", "weather", "performance"];
 function sendDataToKeyboard(msg) {
     if (!keyboard) {
@@ -478,6 +498,6 @@ function sendDataToKeyboard(msg) {
     }
 }
 
-startPerfMonitor();
-startWeatherMonitor();
-startStockMonitor();
+if (showPerformance) { startPerfMonitor(); }
+if (showWeather) { startWeatherMonitor(); }
+if (showStocks) { startStockMonitor(); }
