@@ -8,17 +8,34 @@ This project utilizes QMK's raw hid methods to send and receive data between a h
 
 ## Installation
 
-After cloning this repo, run `npm install .` and wait for all required packages to finish installing. You'll also need to compile and flash [my keymap](https://github.com/ajcav2/nibble/blob/master/keymaps/hid-display/keymap.c) onto your keyboard to decode and display the incoming messages.
+After cloning this repo, run `npm install .` and wait for all required packages to finish installing. You should also clone my fork of the Nibble library to get the OLED functionality working keyboard-side. You can see an example of how to implement this on [my keymap](https://github.com/ajcav2/nibble/blob/master/keymaps/hid-display/keymap.c).
 
-## Default Screen
+## Configuration
+There are just a few steps to get this feature working on your Nibble. First, choose a key to toggle between screens, and call the `update_oled()` method when this key is pressed. [Example here](https://github.com/ajcav2/nibble/blob/master/keymaps/hid-display/keymap.c).
 
-![Default screen](./img/default.jpg)
-Before running the Node.js script on the host PC, the OLED will show current modifiers and a words per minute stat.
+Next, set up your [config file](https://github.com/ajcav2/Nibble-QMK-HID/blob/master/config.js) according to the table below.
+| Parameter | Default value | Description |
+|-----------|:-------------:|-------------|
+| `productId` |  `24672` | Nibble product ID |
+| `vendorId` |    `28257`   | Nibble vendor ID |
+| `usage` | `97` | Nibble usage |
+| `usagePage` |  `65376` | Nibble usage page |
+| `showStocks` |    `false`   | Should we load the stocks page? |
+| `tableName` | `'Stocks'` | If showing stocks, provide the AWS table name |
+| `region` |  `'us-east-1'` | If showing stocks, provide the AWS region |
+| `profile` |    `'default'`   | If showing stocks, provide the AWS profile |
+| `showWeather` | `true` | Should we load the weather? |
+| `weatherApiKey` |  `null` | If showing weather, provide an API key for OpenWeatherMap |
+| `zipCode` |    `60005`   | If showing weather, provide a zip code |
+| `showPerformance` | `true` | Should we show system performance? |
+| `storageDrive` | `'C:'` | If showing performance, provide a storage drive letter |
+
+Finally, if you choose to use stock data, you will need to configure your own AWS DynamoDB table and Lambda function to pull and record stock data. If you're up to the challenge, feel free to reach out to me and I can provide a Lambda file that scrapes the stock data and puts it into a table. Lastly, follow the steps [here](https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html#setup-credentials-setting) to set your credentials on your windows machine. This has not been tested on Linux or Mac.
 
 ## Stock Data
 
 ![Stock screen](./img/stocks.jpg)
-Unfortuately, real time stock data is not free to obtain or store, so this part of the project will not work for everyone. As a workaround, I created a Python script to run every 5 minutes on AWS Lambda which scrapes Yahoo Finance for real-time stock data on specfic companies. This data is then sent to a DynamoDB table for storage. When the main `Keyboard.js` script is running, it queries the DynamoDB table for stock information. The keys in the DynamoDB table are: `Ticker`, `Timestamp`, and `MarketPrice`.
+Unfortuately, real time stock data is not free to obtain or store, so this part of the project requires a bit more effort to implement. As a workaround, I created a Python script to run every 5 minutes on AWS Lambda which scrapes Yahoo Finance for real-time stock data on specfic companies. This data is then sent to a DynamoDB table for storage. When the main `Keyboard.js` script is running, it queries the DynamoDB table for stock information. The keys in the DynamoDB table are: `Ticker`, `Timestamp`, and `MarketPrice`.
 
 Once the data is sorted, some key metrics are sent to the keyboard. We start by sending the stock's current price, as well as percent change from beginning of the trading day. We also send the name of the stock. Lastly, we send a list of (x, y) coordinates which represent the graph of the stock's market price throughout the day. This information is decoded on the keyboard, and the relevant information is drawn.
 
@@ -30,5 +47,5 @@ Weather data is obtained from [OpenWeatherMap](https://openweathermap.org/). To 
 ## Performance Data
 
 ![Performance screen](./img/performance.jpg)
-Currently, the performance data module will monitor four aspects of your PC: current volume, CPU utilization, RAM utilization, and disk space utilization on the C: drive. 
+Currently, the performance data module will monitor four aspects of your PC: current volume, CPU utilization, RAM utilization, and disk space utilization on the C: drive, or another drive of your choice. 
 
