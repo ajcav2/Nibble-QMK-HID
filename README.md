@@ -11,7 +11,18 @@ This project utilizes QMK's raw hid methods to send and receive data between a h
 After cloning this repo, run `npm install .` and wait for all required packages to finish installing. You should also clone my fork of the Nibble library to get the OLED functionality working keyboard-side. You can see an example of how to implement this on [my keymap](https://github.com/ajcav2/nibble/blob/master/keymaps/hid-display/keymap.c).
 
 ## Configuration
-There are just a few steps to get this feature working on your Nibble. First, choose a key to toggle between screens, and call the `update_oled()` method when this key is pressed. [Example here](https://github.com/ajcav2/nibble/blob/master/keymaps/hid-display/keymap.c).
+There are just a few steps to get this feature working on your Nibble. First, choose a key to toggle between screens, and call the `update_oled()` method when this key is pressed. [Example here](https://github.com/ajcav2/nibble/blob/master/keymaps/hid-display/keymap.c). Make sure to change the following lines to reflect the data you plan on displaying.
+
+```c
+// Define which oled screens you want to see
+#define show_stocks false
+#define show_weather true
+#define show_performance true
+
+// Define which oled screen to start on
+// 1: stocks   2: weather   3: performance
+int volatile current_screen = 2;
+```
 
 Next, set up your [config file](https://github.com/ajcav2/Nibble-QMK-HID/blob/master/config.js) according to the table below.
 | Parameter | Default value | Description |
